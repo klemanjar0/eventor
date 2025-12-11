@@ -11,3 +11,8 @@ export async function clearAuthCookies() {
     c.delete("refresh_token");
   }
 }
+
+export async function hasRefreshToken(): Promise<boolean> {
+  const c = await cookies();
+  return c.has("refresh_token") && !!c.get("refresh_token")?.value;
+}

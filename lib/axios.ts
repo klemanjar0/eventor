@@ -28,6 +28,24 @@ axiosInstance.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
+      // Check if refresh token exists before attempting refresh
+      if (typeof window !== "undefined") {
+        try {
+          const checkResponse = await fetch("/api/auth/has-refresh-token", {
+            credentials: "include",
+          });
+          const { hasToken } = await checkResponse.json();
+
+          if (!hasToken) {
+            // No refresh token available, return the error without attempting refresh
+            return Promise.reject(error);
+          }
+        } catch (checkError) {
+          console.error("Error checking refresh token:", checkError);
+          return Promise.reject(error);
+        }
+      }
+
       try {
         // Attempt to refresh the token
         // The refresh token cookie will be sent automatically due to withCredentials: true
@@ -41,21 +59,21 @@ axiosInstance.interceptors.response.use(
 
         console.log("TOKEN REFRESHED: ", response.data);
 
-        // Retry the original request
-        // The new access token cookie will be sent automatically
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.log("CATCH");
-        console.log(refreshError);
-        // If refresh fails, redirect to login (but only if not already on a public page)
-        if (typeof window !== "undefined") {
-          const publicPaths = ["/login", "/register"];
-          const currentPath = window.location.pathname;
+        console.error("Token refresh failed:", refreshError);
 
-          if (!publicPaths.includes(currentPath)) {
-            window.location.href = "/login";
+        if (typeof window !== "undefined") {
+          try {
+            await fetch("/api/auth/clear-cookies", {
+              method: "POST",
+              credentials: "include",
+            });
+          } catch (clearError) {
+            console.error("Error clearing cookies:", clearError);
           }
         }
+
         return Promise.reject(refreshError);
       }
     }

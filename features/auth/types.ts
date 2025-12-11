@@ -23,19 +23,9 @@ export interface AuthResponse extends UserData {
   refresh_token: string;
 }
 
+export interface RegisterResponse {
+  success: boolean;
+  data: Anything;
+}
+
 export type VerifyResponse = UserData;
-
-export interface RefreshTokenDto {
-  refreshToken: string;
-}
-
-export interface RefreshTokenResponse {
-  accessToken: string;
-  refreshToken: string;
-}
-
-export interface AuthState {
-  user: AuthUser | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-}

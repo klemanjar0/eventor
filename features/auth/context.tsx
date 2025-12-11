@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { authApi } from "./api";
+import * as authApi from "./api";
 import { AuthUser, LoginDto, RegisterDto } from "./types";
 import { transformApiResponseToUser } from "@/features/auth/utility";
 
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const user = transformApiResponseToUser(response);
       setUser(user);
     } catch (e) {
-      console.log(e);
+      setUser(null);
     }
   };
 
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const user = transformApiResponseToUser(response);
       setUser(user);
-      router.push("/dashboard");
+      router.push("/");
     } catch (err: any) {
       const errorMessage =
         err.message || "Login failed. Please check your credentials.";
@@ -99,9 +99,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const response = await authApi.register(data);
 
-      const user = transformApiResponseToUser(response);
-      setUser(user);
-      router.push("/dashboard");
+      if (!response.success) {
+        return;
+      }
+
+      router.push("/login");
     } catch (err: any) {
       const errorMessage =
         err.message || "Registration failed. Please try again.";
@@ -121,7 +123,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setUser(null);
       setIsLoading(false);
-      router.push("/login");
     }
   };
 

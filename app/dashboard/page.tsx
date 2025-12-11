@@ -1,11 +1,9 @@
 "use client";
 
 import { useAuth } from "@/features/auth/context";
-import { useRequireAuth } from "@/features/auth/hooks";
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
-  const { isLoading } = useRequireAuth();
+  const { user, logout, isLoading } = useAuth();
 
   if (isLoading) {
     return (
